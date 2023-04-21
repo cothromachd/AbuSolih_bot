@@ -82,7 +82,14 @@ func main() {
 					}
 
 					log.Printf("Author to %s %d: %s\n", replyMsg.OriginalSenderName, replyMsg.OriginalUnixtime, ctx.Message().Text)
-					chatIDToSend = userChatIDI.(int64)
+					switch v := userChatIDI.(type) {
+					case int64:
+						chatIDToSend = v
+					case float64:
+						chatIDToSend = int64(v)
+					default:
+						return fmt.Errorf("get chatID from cache failed: can't cast interface value")
+					}
 				}
 			}
 
@@ -106,7 +113,7 @@ func main() {
 						 // if so, I will save his chat_id by nickname and his text of msg to get it when admin will answer
 			c.Set(fmt.Sprintf("%s %s %s %s %d", ctx.Sender().FirstName, ctx.Sender().LastName, ctx.Message().Text, ctx.Message().Caption, ctx.Message().Unixtime), ctx.Message().Chat.ID, 24*time.Hour)
 			c.Store()
-			
+
 			log.Printf("%s %s %d: %s\n", ctx.Message().Sender.FirstName, ctx.Message().Sender.LastName, ctx.Message().Unixtime, ctx.Message().Text)
 		} else {
 			log.Printf("%s %d: %s\n", ctx.Message().Sender.Username, ctx.Message().Unixtime, ctx.Message().Text)
@@ -152,7 +159,14 @@ func main() {
 						return err
 					}
 
-					chatIDToSend = userChatIDI.(int64)
+                	switch v := userChatIDI.(type) {
+					case int64:
+						chatIDToSend = v
+					case float64:
+						chatIDToSend = int64(v)
+					default:
+						return fmt.Errorf("get chatID from cache failed: can't cast interface value")
+					}
 				}
 			}
 
@@ -177,10 +191,10 @@ func main() {
 			c.Store()
 
 			log.Printf("%s %s %d: %s\n", ctx.Message().Sender.FirstName, ctx.Message().Sender.LastName, ctx.Message().Unixtime, ctx.Message().Caption)
-		} else { 
+		} else {
 			log.Printf("%s %d: %s\n", ctx.Message().Sender.Username, ctx.Message().Unixtime, ctx.Message().Caption)
 		}
-		
+
 		b.Send(tele.ChatID(chatID64), fmt.Sprintf("Информация о пользователе:\nИмя: %s\nФамилия: %s\nUsername: @%s\nID: %d\nСообщение от пользователя:\n", ctx.Sender().FirstName, ctx.Sender().LastName, ctx.Sender().Username, ctx.Sender().ID))
 		err = ctx.Reply("جزاك اللهُ خيرًا\nВаше сообщение успешно отправлено администратору.")
 		if err != nil {
