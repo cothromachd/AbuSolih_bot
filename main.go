@@ -6,10 +6,10 @@ import (
 	"os"
 	"strconv"
 	"time"
-
 	cache "github.com/cothromachd/in-memory-cache"
 	"github.com/joho/godotenv"
 	tele "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/middleware"
 )
 
 func main() {
@@ -28,6 +28,7 @@ func main() {
 
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
+
 	}
 
 	token, ok := os.LookupEnv("TOKEN")
@@ -47,17 +48,29 @@ func main() {
 
 	chatID64 := int64(chatID)
 
+	logsFile, err := os.OpenFile("logfile.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
+	defer logsFile.Close()
+
+	logger := log.New(logsFile, "", log.Ldate|log.Ltime|log.Lshortfile)
+
 	pref := tele.Settings{
 		Token:  token,
 		Poller: &tele.LongPoller{Timeout: 60 * time.Second},
+		OnError: func(err error, ctx tele.Context) {
+			logger.Println(err)
+			log.Println(err)
+		},
 	}
 
 	b, err := tele.NewBot(pref)
 	if err != nil {
-		log.Fatal(err)
-
 		return
 	}
+
+	b.Use(middleware.Logger(logger))
 
 	b.Handle("/start", func(ctx tele.Context) error {
 		return ctx.Reply(`السلام عليكم ورحمة الله وبركاته
@@ -67,8 +80,10 @@ func main() {
 	b.Handle(tele.OnText, func(ctx tele.Context) error {
 		if ctx.Chat().ID == chatID64 && ctx.Message().ReplyTo != nil { // in case if author text
 			replyMsg := ctx.Message().ReplyTo
+
 			var userChatIDI interface{}
 			var chatIDToSend int64
+
 			if replyMsg != nil {
 				sender := replyMsg.OriginalSender
 				if sender != nil {
@@ -82,6 +97,7 @@ func main() {
 					}
 
 					log.Printf("Author to %s %d: %s\n", replyMsg.OriginalSenderName, replyMsg.OriginalUnixtime, ctx.Message().Text)
+					
 					switch v := userChatIDI.(type) {
 					case int64:
 						chatIDToSend = v
@@ -95,8 +111,7 @@ func main() {
 
 			_, err = b.Copy(tele.ChatID(chatIDToSend), ctx.Message())
 			if err != nil {
-				log.Println(err)
-				b.Send(tele.ChatID(chatID64), "Ошибка у админа: "+err.Error())
+				return err
 			}
 
 			return err
@@ -126,9 +141,7 @@ func main() {
 
 		_, err = b.Forward(tele.ChatID(chatID64), ctx.Message())
 		if err != nil {
-			log.Println(err)
 			b.Send(tele.ChatID(chatID64), "Ошибка у пользователя: "+err.Error())
-
 			return err
 		}
 
@@ -142,10 +155,10 @@ func main() {
 
 	b.Handle(tele.OnMedia, func(ctx tele.Context) error {
 		if ctx.Chat().ID == chatID64 && ctx.Message().ReplyTo != nil { // in case if admin text
-			replyMsg := ctx.Message().ReplyTo
-
 			var userChatIDI interface{}
 			var chatIDToSend int64
+
+			replyMsg := ctx.Message().ReplyTo
 
 			if replyMsg != nil {
 				sender := replyMsg.OriginalSender
@@ -154,6 +167,7 @@ func main() {
 					log.Printf("Author to %s %d: %s\n", sender.Username, replyMsg.OriginalUnixtime, ctx.Message().Caption)
 				} else {
 					log.Printf("Author to %s %d: %s\n", replyMsg.OriginalSenderName, replyMsg.OriginalUnixtime, ctx.Message().Caption)
+					
 					userChatIDI, err = c.Get(fmt.Sprintf("%s %s %s %d", replyMsg.OriginalSenderName, replyMsg.Text, replyMsg.Caption, replyMsg.OriginalUnixtime))
 					if err != nil {
 						return err
