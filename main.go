@@ -63,15 +63,14 @@ func main() {
 		Poller: &tele.LongPoller{Timeout: 60 * time.Second},
 		OnError: func(err error, ctx tele.Context) {
 			logger.Printf("%v\n", err)
-
 			log.Println(err)
 		},
 	}
-
+	
 	client := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:	  "localhost:6379",
 		Password: "", // no password set
-		DB:       0,  // use default DB
+		DB:		  0,  // use default DB
 	})
 
 	b, err := tele.NewBot(pref)
@@ -103,20 +102,20 @@ func main() {
 					if err != nil {
 						return err
 					}
-
+					
 					log.Printf("Author to %s %d: %s\n", replyMsg.OriginalSenderName, replyMsg.OriginalUnixtime, ctx.Message().Text)
-
+					
 					/*
-						switch v := userChatIDI.(type) {
-						case int64:
-							chatIDToSend = v
-						case float64:
-							chatIDToSend = int64(v)
-						default:
-							return fmt.Errorf("get chatID from cache failed: can't cast interface value")
-						}*/
+					switch v := userChatIDI.(type) {
+					case int64:
+						chatIDToSend = v
+					case float64:
+						chatIDToSend = int64(v)
+					default:
+						return fmt.Errorf("get chatID from cache failed: can't cast interface value")
+					}*/
 
-					userChatID, err = strconv.ParseInt(ToChatID, 10, 64)
+					userChatID, err = strconv.ParseInt(ToChatID, 10, 64) 
 					if err != nil {
 						return err
 					}
@@ -209,7 +208,7 @@ func main() {
 						return fmt.Errorf("get chatID from cache failed: can't cast interface value")
 					}*/
 
-					userChatID, err = strconv.ParseInt(ToChatID, 10, 64)
+					userChatID, err = strconv.ParseInt(ToChatID, 10, 64) 
 					if err != nil {
 						return err
 					}
