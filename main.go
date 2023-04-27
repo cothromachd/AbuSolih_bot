@@ -86,7 +86,6 @@ func main() {
 					log.Printf("Author to %s %d: %s", sender.Username, replyMsg.OriginalUnixtime, ctx.Message().Text)
 
 				} else {
-					//userChatIDI, err = c.Get(fmt.Sprintf("%s %s %s %d", replyMsg.OriginalSenderName, replyMsg.Text, replyMsg.Caption, replyMsg.OriginalUnixtime))
 					ToChatID, err = client.Get(context.Background(), fmt.Sprintf("%s %s %s %d", replyMsg.OriginalSenderName, replyMsg.Text, replyMsg.Caption, replyMsg.OriginalUnixtime)).Result()
 					if err != nil {
 						return err
@@ -117,8 +116,7 @@ func main() {
 
 		isForbidden := chat.Private
 		if isForbidden { // checking if user disallow adding a link to his account in forwarded messages
-			// if so, I will save his chat_id by nickname and his text of msg to get it when admin will answer
-
+						// if so, I will save his chat_id by nickname and his text of msg to get it when admin will answer
 			if ctx.Sender().LastName != "" {
 				err := client.Set(context.Background(), fmt.Sprintf("%s %s %s %s %d", ctx.Sender().FirstName, ctx.Sender().LastName, ctx.Message().Text, ctx.Message().Caption, ctx.Message().Unixtime), ctx.Message().Chat.ID, 24*time.Hour).Err()
 				if err != nil {
@@ -198,8 +196,7 @@ func main() {
 
 		isForbidden := chat.Private
 		if isForbidden { // checking if user disallow adding a link to his account in forwarded messages
-			// if so, I will save his chat_id by nickname and his text of msg to get it when admin will answer
-
+						// if so, I will save his chat_id by nickname and his text of msg to get it when admin will answer
 			if ctx.Sender().LastName != "" {
 				err := client.Set(context.Background(), fmt.Sprintf("%s %s %s %s %d", ctx.Sender().FirstName, ctx.Sender().LastName, ctx.Message().Text, ctx.Message().Caption, ctx.Message().Unixtime), ctx.Message().Chat.ID, 24*time.Hour).Err()
 				if err != nil {
