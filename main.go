@@ -8,25 +8,14 @@ import (
 	"strconv"
 	"time"
 
-	//cache "github.com/cothromachd/in-memory-cache"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	tele "gopkg.in/telebot.v3"
 )
 
 func main() {
-	//c := cache.New()
-
-	//c.Load(12 * time.Hour) // restoring clients messages from database file if host crash case happened
-
 	ticker := time.NewTicker(1 * time.Hour)
 	defer ticker.Stop()
-
-	/*go func() { // save to file the state of the client message store every hour
-		for range ticker.C {
-			c.Store()
-		}
-	}()*/
 
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found")
@@ -104,16 +93,6 @@ func main() {
 					}
 					
 					log.Printf("Author to %s %d: %s\n", replyMsg.OriginalSenderName, replyMsg.OriginalUnixtime, ctx.Message().Text)
-					
-					/*
-					switch v := userChatIDI.(type) {
-					case int64:
-						chatIDToSend = v
-					case float64:
-						chatIDToSend = int64(v)
-					default:
-						return fmt.Errorf("get chatID from cache failed: can't cast interface value")
-					}*/
 
 					userChatID, err = strconv.ParseInt(ToChatID, 10, 64) 
 					if err != nil {
@@ -139,8 +118,6 @@ func main() {
 		isForbidden := chat.Private
 		if isForbidden { // checking if user disallow adding a link to his account in forwarded messages
 			// if so, I will save his chat_id by nickname and his text of msg to get it when admin will answer
-			//c.Set(fmt.Sprintf("%s %s %s %s %d", ctx.Sender().FirstName, ctx.Sender().LastName, ctx.Message().Text, ctx.Message().Caption, ctx.Message().Unixtime), ctx.Message().Chat.ID, 24*time.Hour)
-			//c.Store()
 
 			if ctx.Sender().LastName != "" {
 				err := client.Set(context.Background(), fmt.Sprintf("%s %s %s %s %d", ctx.Sender().FirstName, ctx.Sender().LastName, ctx.Message().Text, ctx.Message().Caption, ctx.Message().Unixtime), ctx.Message().Chat.ID, 24*time.Hour).Err()
@@ -193,20 +170,10 @@ func main() {
 				} else {
 					log.Printf("Author to %s %d: %s\n", replyMsg.OriginalSenderName, replyMsg.OriginalUnixtime, ctx.Message().Caption)
 
-					//ToChatID, err = c.Get(fmt.Sprintf("%s %s %s %d", replyMsg.OriginalSenderName, replyMsg.Text, replyMsg.Caption, replyMsg.OriginalUnixtime))
 					ToChatID, err = client.Get(context.Background(), fmt.Sprintf("%s %s %s %d", replyMsg.OriginalSenderName, replyMsg.Text, replyMsg.Caption, replyMsg.OriginalUnixtime)).Result()
 					if err != nil {
 						return err
 					}
-
-					/*switch v := ToChatID.(type) {
-					case int64:
-						userChatID = v
-					case float64:
-						userChatID = int64(v)
-					default:
-						return fmt.Errorf("get chatID from cache failed: can't cast interface value")
-					}*/
 
 					userChatID, err = strconv.ParseInt(ToChatID, 10, 64) 
 					if err != nil {
@@ -232,8 +199,6 @@ func main() {
 		isForbidden := chat.Private
 		if isForbidden { // checking if user disallow adding a link to his account in forwarded messages
 			// if so, I will save his chat_id by nickname and his text of msg to get it when admin will answer
-			//c.Set(fmt.Sprintf("%s %s %s %s %d", ctx.Sender().FirstName, ctx.Sender().LastName, ctx.Message().Text, ctx.Message().Caption, ctx.Message().Unixtime), ctx.Message().Chat.ID, 24*time.Hour)
-			//c.Store()
 
 			if ctx.Sender().LastName != "" {
 				err := client.Set(context.Background(), fmt.Sprintf("%s %s %s %s %d", ctx.Sender().FirstName, ctx.Sender().LastName, ctx.Message().Text, ctx.Message().Caption, ctx.Message().Unixtime), ctx.Message().Chat.ID, 24*time.Hour).Err()
