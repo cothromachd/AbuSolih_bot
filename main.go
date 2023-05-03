@@ -48,7 +48,7 @@ func main() {
 	logger := log.New(logsFile, "", log.Ldate|log.Ltime)
 
 	pref := tele.Settings{
-		Token:  token,
+		Token:  token,	
 		Poller: &tele.LongPoller{Timeout: 60 * time.Second},
 		OnError: func(err error, ctx tele.Context) {
 			logger.Printf("%v\n", err)
@@ -57,7 +57,7 @@ func main() {
 	}
 	
 	client := redis.NewClient(&redis.Options{
-		Addr:	  "localhost:6379",
+		Addr:	  "redis:6379",
 		Password: "", // no password set
 		DB:		  0,  // use default DB
 	})
@@ -202,6 +202,7 @@ func main() {
 				if err != nil {
 					return err
 				}
+				
 			} else if ctx.Sender().LastName == "" {
 				err := client.Set(context.Background(), fmt.Sprintf("%s %s %s %d", ctx.Sender().FirstName, ctx.Message().Text, ctx.Message().Caption, ctx.Message().Unixtime), ctx.Message().Chat.ID, 24*time.Hour).Err()
 				if err != nil {
