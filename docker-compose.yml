@@ -12,7 +12,7 @@ services:
       - CHAT_ID=${CHAT_ID}
 
   redis:
-    image: redis:latest
+    image: redis:alpine
     restart: always
     ports:
       - 6379:6379
